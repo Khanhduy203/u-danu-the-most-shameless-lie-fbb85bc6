@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const entry = "I billed you for nothing.";
@@ -20,4 +20,12 @@ if (!valid) {
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "/output";
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, "entry.txt"), entry, "utf8");
+const outPath = join(outDir, "entry.txt");
+writeFileSync(outPath, entry, "utf8");
+
+// Round-trip guard: the file the grader reads must byte-match the validated entry.
+const written = readFileSync(outPath, "utf8");
+if (written !== entry) {
+  console.error("entry.txt does not match the validated entry");
+  process.exit(1);
+}
